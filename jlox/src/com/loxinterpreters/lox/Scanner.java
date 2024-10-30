@@ -81,6 +81,9 @@ public class Scanner {
                 if(match('/')) {
                     // A comment goes until the end of the line
                     while (peek() != '\n' && !isAtEnd()) advance();
+                } else if (match('*')) {
+                    // multi-line comments
+                    multilineComments();
                 } else {
                     addToken(SLASH);
                 }
@@ -106,6 +109,28 @@ public class Scanner {
                 }
                 break;
         }
+    }
+
+    private void multilineComments() {
+        boolean closedComment = false;
+        while (!isAtEnd()) {
+            if (match('*') && peek() == '/') {
+                closedComment = true;
+                break;
+            }
+
+            if (peek() == '\n') line++;
+
+            advance();
+        }
+
+        if (!closedComment) {
+            Lox.error(line, "Unclosed multiline comment.");
+            return;
+        }
+
+        // consume the '/' character
+        advance();
     }
 
     private void identifier() {
